@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Important Question</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .container {
+    text-align: center;
+    position: relative;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+
+  button {
+    padding: 12px 25px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    margin: 10px;
+    position: relative;
+  }
+
+  #yesBtn {
+    background-color: #4CAF50;
+    color: white;
+  }
+
+  #noBtn {
+    background-color: #f44336;
+    color: white;
+    position: absolute;
+  }
+
+  /* SCREEN SHAKE */
+  .shake {
+    animation: shake 0.3s infinite;
+  }
+
+  @keyframes shake {
+    0% { transform: translate(0px, 0px); }
+    25% { transform: translate(-5px, 5px); }
+    50% { transform: translate(5px, -5px); }
+    75% { transform: translate(-5px, -5px); }
+    100% { transform: translate(5px, 5px); }
+  }
+
+  /* HEARTS */
+  .heart {
+    position: fixed;
+    font-size: 24px;
+    animation: floatUp 3s linear forwards;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-300px); opacity: 0; }
+  }
+
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Will you have sex with me?</h1>
+  <button id="yesBtn">Yes</button>
+  <button id="noBtn">No</button>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function moveButton() {
+  const maxX = window.innerWidth - noBtn.offsetWidth;
+  const maxY = window.innerHeight - noBtn.offsetHeight;
+  noBtn.style.left = Math.random() * maxX + "px";
+  noBtn.style.top = Math.random() * maxY + "px";
+}
+
+moveButton();
+noBtn.addEventListener("mouseover", moveButton);
+noBtn.addEventListener("touchstart", moveButton);
+noBtn.addEventListener("click", moveButton);
+
+// SHAKE when mouse near "No"
+document.addEventListener("mousemove", e => {
+  const rect = noBtn.getBoundingClientRect();
+  const dx = e.clientX - (rect.left + rect.width/2);
+  const dy = e.clientY - (rect.top + rect.height/2);
+  const distance = Math.sqrt(dx*dx + dy*dy);
+
+  if (distance < 150) {
+    document.body.classList.add("shake");
+  } else {
+    document.body.classList.remove("shake");
+  }
+});
+
+// HEARTS
+function createHearts() {
+  for (let i = 0; i < 20; i++) {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+    heart.style.left = Math.random() * window.innerWidth + "px";
+    heart.style.top = window.innerHeight + "px";
+    heart.style.fontSize = (Math.random() * 20 + 20) + "px";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 3000);
+  }
+}
+
+// CONFETTI
+let confetti = [];
+for (let i = 0; i < 150; i++) {
+  confetti.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 6 + 4,
+    d: Math.random() * 150
+  });
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+  ctx.beginPath();
+  for (let i = 0; i < confetti.length; i++) {
+    let p = confetti[i];
+    ctx.moveTo(p.x, p.y);
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+  }
+  ctx.fill();
+  updateConfetti();
+}
+
+function updateConfetti() {
+  for (let i = 0; i < confetti.length; i++) {
+    let p = confetti[i];
+    p.y += Math.cos(p.d) + 1;
+    if (p.y > canvas.height) p.y = 0;
+  }
+}
+
+function startConfetti() {
+  setInterval(drawConfetti, 20);
+}
+
+// SOUND
+const sound = new Audio("https://www.soundjay.com/human/sounds/applause-8.mp3");
+
+// YES button
+yesBtn.addEventListener("click", () => {
+  createHearts();
+  startConfetti();
+  sound.play();
+
+  setTimeout(() => {
+    window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+  }, 2500);
+});
+</script>
+
+</body>
+</html>
