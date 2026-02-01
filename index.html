@@ -19,7 +19,6 @@
 
   .container {
     text-align: center;
-    position: relative;
     width: 100%;
   }
 
@@ -36,18 +35,31 @@
     border: none;
     cursor: pointer;
     margin: 10px;
-    position: absolute;
   }
 
-  #yesBtn {
-    background: #4CAF50;
-    color: white;
-    position: static;
-  }
-
+  #yesBtn { background: #4CAF50; color: white; }
   #noBtn {
     background: #f44336;
     color: white;
+    position: fixed;
+  }
+
+  .heart {
+    position: fixed;
+    font-size: 22px;
+    animation: floatUp 2s linear forwards;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-200px); opacity: 0; }
+  }
+
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
 
   #rickrollContainer {
@@ -75,6 +87,8 @@
   <button id="noBtn">No</button>
 </div>
 
+<canvas id="confetti"></canvas>
+
 <div id="rickrollContainer">
   <img src="https://media.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif" />
 </div>
@@ -82,37 +96,83 @@
 <script>
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
 const rickrollContainer = document.getElementById("rickrollContainer");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 const clapSound = new Audio("https://www.soundjay.com/human/sounds/applause-8.mp3");
 const rickSound = new Audio("https://www.myinstants.com/media/sounds/rickroll.mp3");
 
-// Keep NO button inside screen
+// --- KEEP NO BUTTON INSIDE SCREEN ---
 function moveButton() {
-  const padding = 20;
+  const padding = 10;
   const maxX = window.innerWidth - noBtn.offsetWidth - padding;
   const maxY = window.innerHeight - noBtn.offsetHeight - padding;
-
-  const x = Math.random() * maxX;
-  const y = Math.random() * maxY;
-
-  noBtn.style.left = x + "px";
-  noBtn.style.top = y + "px";
+  noBtn.style.left = Math.max(0, Math.random() * maxX) + "px";
+  noBtn.style.top = Math.max(0, Math.random() * maxY) + "px";
 }
 
 moveButton();
 
-// NO click = vibrate + escape
+// --- VIBRATION + SHAKE ---
+function shakeScreen() {
+  document.body.style.transform = "translate(5px,5px)";
+  setTimeout(()=>document.body.style.transform="",100);
+}
+
 noBtn.addEventListener("click", () => {
-  if (navigator.vibrate) navigator.vibrate(200);
+  if (navigator.vibrate) navigator.vibrate([200,100,200]);
+  shakeScreen();
   moveButton();
 });
 
-// YES click = chaos reveal
-yesBtn.addEventListener("click", () => {
+// --- HEARTS ---
+function createHearts() {
+  for (let i=0;i<15;i++){
+    const heart=document.createElement("div");
+    heart.className="heart";
+    heart.innerHTML="❤️";
+    heart.style.left=Math.random()*window.innerWidth+"px";
+    heart.style.top=window.innerHeight+"px";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),2000);
+  }
+}
+
+// --- CONFETTI ---
+let confetti=[];
+for(let i=0;i<120;i++){
+  confetti.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*6+3,d:Math.random()*100});
+}
+function drawConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.beginPath();
+  for(let p of confetti){
+    ctx.moveTo(p.x,p.y);
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2,true);
+  }
+  ctx.fillStyle="rgba(255,255,255,0.8)";
+  ctx.fill();
+  for(let p of confetti){
+    p.y+=2;
+    if(p.y>canvas.height) p.y=0;
+  }
+}
+function startConfetti(){setInterval(drawConfetti,20);}
+
+// --- YES CLICK CELEBRATION THEN RICKROLL ---
+yesBtn.addEventListener("click", ()=>{
   clapSound.play();
-  rickrollContainer.style.display = "flex";
-  rickSound.play();
+  createHearts();
+  startConfetti();
+
+  setTimeout(()=>{
+    rickrollContainer.style.display="flex";
+    rickSound.play();
+  },1000);
 });
 </script>
 
